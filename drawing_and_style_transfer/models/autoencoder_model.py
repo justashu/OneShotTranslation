@@ -104,7 +104,9 @@ class AutoEncoderModel(BaseModel):
         # 'A' is given as single_dataset
         input_B = input['A']
         if len(self.gpu_ids) > 0:
-            input_B = input_B.cuda(self.gpu_ids[0], async=True)
+            #input_B = input_B.cuda(self.gpu_ids[0], async=True)
+            input_B = input_B.cuda(self.gpu_ids[0])
+
         self.input_B = input_B
         # 'A' is given as single_dataset
         self.image_paths = input['A_paths']
@@ -143,7 +145,7 @@ class AutoEncoderModel(BaseModel):
     def backward_D(self):
         fake_B = self.fake_B_pool.query(self.fake_B)
         loss_D = self.backward_D_basic(self.netD, self.real_B, fake_B)
-        self.loss_D = loss_D.data[0]
+        self.loss_D = loss_D.item()
 
     def _compute_kl(self, mu):
         mu_2 = torch.pow(mu, 2)
@@ -166,8 +168,8 @@ class AutoEncoderModel(BaseModel):
         loss_G.backward()
 
         self.fake_B = fake_B.data
-        self.loss_Gan = loss_Gan.data[0]
-        self.loss_idt_B = loss_idt_B.data[0]
+        self.loss_Gan = loss_Gan.item()
+        self.loss_idt_B = loss_idt_B.item()
 
     def optimize_parameters(self):
         # forward
